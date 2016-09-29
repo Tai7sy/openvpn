@@ -530,7 +530,7 @@ add_proxy_headers (struct http_proxy_info *p,
 	return false;
     }
 
-  if (!host_header_sent && strncasecmp(host,"nosend")!=0) //didn't send the "Host: XXX" and host!=nosend
+  if (!host_header_sent && strcasecmp(host,"nosend")!=0) //didn't send the "Host: XXX" and host!=nosend
     {
       openvpn_snprintf (buf, sizeof(buf), "Host: %s", host);
       msg (D_PROXY, "Send to HTTP proxy: '%s'", buf);
