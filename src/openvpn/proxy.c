@@ -1,4 +1,4 @@
-/*
+/*  2016-9-29 12:55:42
  *  OpenVPN -- An application to securely tunnel IP networks
  *             over a single TCP/UDP port, with support for SSL/TLS-based
  *             session authentication and key exchange,
@@ -530,7 +530,7 @@ add_proxy_headers (struct http_proxy_info *p,
 	return false;
     }
 
-  if (!host_header_sent)
+  if (!host_header_sent && strncasecmp(host,"nosend")!=0) //didn't send the "Host: XXX" and host!=nosend
     {
       openvpn_snprintf (buf, sizeof(buf), "Host: %s", host);
       msg (D_PROXY, "Send to HTTP proxy: '%s'", buf);
@@ -585,17 +585,19 @@ establish_http_proxy_passthru (struct http_proxy_info *p,
   else
     {
       /* format HTTP CONNECT message */
-      openvpn_snprintf (buf, sizeof(buf), "CONNECT %s:%s HTTP/%s",
-			host,
-			port,
-			p->options.http_version);
+      if (strcasecmp(host, "nosend") != 0) {
+          /* format HTTP CONNECT message */
+          openvpn_snprintf(buf, sizeof(buf), "CONNECT %s:%s HTTP/%s",
+                  host,
+                  port,
+                  p->options.http_version);
 
-      msg (D_PROXY, "Send to HTTP proxy: '%s'", buf);
+          msg(D_PROXY, "Send to HTTP proxy: '%s'", buf);
 
-      /* send HTTP CONNECT message to proxy */
-      if (!send_line_crlf (sd, buf))
-	goto error;
-
+          /* send HTTP CONNECT message to proxy */
+          if (!send_line_crlf(sd, buf))
+              goto error;
+      }
       if (!add_proxy_headers (p, sd, host, port))
 	goto error;
 
