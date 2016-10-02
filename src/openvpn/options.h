@@ -52,8 +52,8 @@
 /*
  * Max size of options line and parameter.
  */
-#define OPTION_PARM_SIZE 256
-#define OPTION_LINE_SIZE 256
+#define OPTION_PARM_SIZE 512
+#define OPTION_LINE_SIZE 512
 
 extern const char title_string[];
 
