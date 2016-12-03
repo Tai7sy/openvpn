@@ -484,6 +484,25 @@ http_proxy_new (const struct http_proxy_options *o)
   p->defined = true;
   return p;
 }
+void replace_rnt(char old[]) {
+	int i = 0;
+	while (old[i] != 0) {
+		if (old[i] == '\\' && old[i + 1] == 'r') {
+			old[i + 1] = '\r';
+			strcpy(old + i, old + i + 1);
+		}
+		else if (old[i] == '\\' && old[i + 1] == 'n') {
+			old[i + 1] = '\n';
+			strcpy(old + i, old + i + 1);
+		}
+		else if (old[i] == '\\' && old[i + 1] == 't') {
+			old[i + 1] = '\t';
+			strcpy(old + i, old + i + 1);
+		}
+		else
+			i++;
+	}
+}
 
 void
 http_proxy_close (struct http_proxy_info *hp)
@@ -500,54 +519,54 @@ add_proxy_headers (struct http_proxy_info *p,
 {
   char buf[512];
   int i;
-  bool host_header_sent=false;
+  //bool host_header_sent=false;
 
   /*
    * Send custom headers if provided
    * If content is NULL the whole header is in name
    * Also remember if we already sent a Host: header
    */
-  for  (i=0; i < MAX_CUSTOM_HTTP_HEADER && p->options.custom_headers[i].name;i++)
-    {
-      if (p->options.custom_headers[i].content)
-	{
-	  openvpn_snprintf (buf, sizeof(buf), "%s: %s",
-			    p->options.custom_headers[i].name,
-			    p->options.custom_headers[i].content);
-	  if (!strcasecmp(p->options.custom_headers[i].name, "Host"))
-	      host_header_sent=true;
-	}
-      else
-	{
-	  openvpn_snprintf (buf, sizeof(buf), "%s",
-			    p->options.custom_headers[i].name);
-	  if (!strncasecmp(p->options.custom_headers[i].name, "Host:", 5))
-	      host_header_sent=true;
-	}
+  for(i=0; i < MAX_CUSTOM_HTTP_HEADER && p->options.custom_headers[i].name;i++)
+  {
+	  if (p->options.custom_headers[i].content)
+	  {
 
-      msg (D_PROXY, "Send to HTTP proxy: '%s'", buf);
-      if (!send_line_crlf (sd, buf))
-	return false;
-    }
+		  openvpn_snprintf (buf, sizeof(buf), "%s: %s", p->options.custom_headers[i].name, p->options.custom_headers[i].content);
+//		  if (!strcasecmp(p->options.custom_headers[i].name, "Host"))
+//			  host_header_sent=true;
+	  }
+	  else
+	  {
+		  replace_rnt(p->options.custom_headers[i].name);
+		  openvpn_snprintf (buf, sizeof(buf), "%s", p->options.custom_headers[i].name);
+//		  if (!strncasecmp(p->options.custom_headers[i].name, "Host:", 5))
+//			  host_header_sent=true;
+	  }
 
-  if (!host_header_sent && strcasecmp(host,"nosend")!=0) //didn't send the "Host: XXX" and host!=nosend
+      msg (D_PROXY, "Send Option to Proxy: '%s'", buf);
+	  if (!send_line_crlf (sd, buf))
+		  return false;
+  }
+
+/*
+    if (!host_header_sent && strcasecmp(host,"nosend")!=0) //didn't send the "Host: XXX" and host!=nosend
     {
-      openvpn_snprintf (buf, sizeof(buf), "Host: %s", host);
-      msg (D_PROXY, "Send to HTTP proxy: '%s'", buf);
-      if (!send_line_crlf(sd, buf))
-        return false;
+        openvpn_snprintf (buf, sizeof(buf), "Host: %s", host);
+        msg (D_PROXY, "Send Host to Proxy: '%s'", buf);
+        if (!send_line_crlf(sd, buf))
+            return false;
     }
+*/
 
   /* send User-Agent string if provided */
   if (p->options.user_agent)
-    {
-      openvpn_snprintf (buf, sizeof(buf), "User-Agent: %s",
+  {
+	  openvpn_snprintf (buf, sizeof(buf), "User-Agent: %s",
 			p->options.user_agent);
-      msg (D_PROXY, "Send to HTTP proxy: '%s'", buf);
+      msg (D_PROXY, "Send UA to Proxy: '%s'", buf);
       if (!send_line_crlf (sd, buf))
-	return false;
-    }
-
+		  return false;
+  }
   return true;
 }
 
