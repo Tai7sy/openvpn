@@ -37,8 +37,8 @@
 #define HTTP_AUTH_N      5 /* number of HTTP_AUTH methods */
 
 struct http_custom_header {
-  const char *name;
-  const char *content;
+  char *name;
+  char *content;
 };
 
 #define MAX_CUSTOM_HTTP_HEADER 20
