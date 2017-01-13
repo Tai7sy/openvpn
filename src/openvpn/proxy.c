@@ -658,11 +658,11 @@ establish_http_proxy_passthru (struct http_proxy_info *p,
 
       /* send empty CR, LF */
       if (!send_crlf (sd))
-	goto error;
+		goto error;
 
       /* receive reply from proxy */
       if (!recv_line (sd, buf, sizeof(buf), get_server_poll_remaining_time (server_poll_timeout), true, NULL, signal_received))
-	goto error;
+		goto error;
 
       /* remove trailing CR, LF */
       chomp (buf);
